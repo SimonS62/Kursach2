@@ -1,11 +1,23 @@
 import json
-from src.files.abstract_file import AbstractFile
+from abc import ABC, abstractmethod
+
+class AbstractFile(ABC):
+    def __init__(self, filename):
+        self.filename = filename
+
+    @abstractmethod
+    def read_data(self):
+        pass  # Абстрактный метод
+
+    @abstractmethod
+    def write_data(self, data):
+        pass  # Абстрактный метод
+
+    @abstractmethod
+    def delete_data(self, data):
+        pass  # Абстрактный метод
 
 class JSONFile(AbstractFile):
-    def __init__(self, filename='vacancies.json'):
-        super().__init__(filename)
-        self.data = self.read_data()
-
     def read_data(self):
         try:
             with open(self.filename, 'r', encoding='utf-8') as f:
@@ -14,19 +26,26 @@ class JSONFile(AbstractFile):
             return []
 
     def write_data(self, data):
+        # Читаем текущие данные
+        existing_data = self.read_data()
         # Объединяем текущие данные с новыми, избегая дубли по 'id'
-        existing_ids = {vac['id'] for vac in self.data}
+        existing_ids = {vac['id'] for vac in existing_data}
         new_entries = [vac for vac in data if vac['id'] not in existing_ids]
-        self.data.extend(new_entries)
-        with open(self.filename, 'w', encoding='utf-8') as f:
-            json.dump(self.data, f, ensure_ascii=False, indent=4)
+        updated_data = existing_data + new_entries
+        self._write_json(updated_data)
 
     def delete_data(self, data):
+        # Читаем текущие данные
+        existing_data = self.read_data()
+
         # Удаляем по id
         ids_to_delete = {vac['id'] for vac in data}
-        self.data = [vac for vac in self.data if vac['id'] not in ids_to_delete]
+        updated_data = [vac for vac in existing_data if vac['id'] not in ids_to_delete]
+        self._write_json(updated_data)
+
+    def _write_json(self, data):
         with open(self.filename, 'w', encoding='utf-8') as f:
-            json.dump(self.data, f, ensure_ascii=False, indent=4)
+            json.dump(data, f, ensure_ascii=False, indent=4)
 
 
 

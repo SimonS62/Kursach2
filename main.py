@@ -1,5 +1,5 @@
 from src.api.hh_ru_api import HHRuAPI
-from src.vacancies.vacancy import Vacancy
+from src.vacancy import Vacancy
 from src.files.json_file import JSONFile
 
 
@@ -18,7 +18,7 @@ def main():
             salary=(item.get('salary', {}).get('from') or 0),
             url=item.get('alternate_url')
         )
-        vacancies_list.append(vars(vacancy))
+        vacancies_list.append(vacancy.to_dict())
 
     file_handler.write_data(vacancies_list)
     print("Вакансии сохранены в файл.")
